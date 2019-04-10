@@ -93,11 +93,15 @@ namespace NetworkSpeedMonitor
 
                 var factory = new MqttFactory();
                 var mqttClient = factory.CreateMqttClient();
-
+                var i = 0;
                 while (true)
                 {
+                    i++;
                     var value = await buffer.ReceiveAsync();
-                    Console.WriteLine($"down: {value.Down} MB/s, up: {value.Up} MB/s");
+                    if (i % (60 * 60) == 0)
+                    {
+                        Console.WriteLine($"down: {value.Down} MB/s, up: {value.Up} MB/s");
+                    }
 
                     if (!mqttClient.IsConnected)
                     {
