@@ -3,7 +3,7 @@ FROM microsoft/dotnet:2.2-sdk AS build
 WORKDIR /app
 
 COPY ./NetworkSpeedMonitor/* ./NetworkSpeedMonitor/
-COPY ./Trafikverket/* ./Trafikverket/
+COPY ./NetworkSpeedMonitor/* ./NetworkSpeedMonitor/
 COPY ./NetworkSpeedMonitor.sln ./NetworkSpeedMonitor.sln
 RUN dotnet restore
 
