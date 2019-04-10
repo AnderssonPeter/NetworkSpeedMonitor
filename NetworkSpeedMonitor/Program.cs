@@ -112,7 +112,7 @@ namespace NetworkSpeedMonitor
                     {
                         await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = mqttTopic + "/Up", Payload = Encoding.UTF8.GetBytes(value.Up.ToString()) },
                                                       new MqttApplicationMessage() { Topic = mqttTopic + "/Down", Payload = Encoding.UTF8.GetBytes(value.Down.ToString()) });
-                        Console.WriteLine("Mqtt message sent");
+                        //Console.WriteLine("Mqtt message sent");
                     }
                     else
                     {
