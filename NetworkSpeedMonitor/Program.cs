@@ -28,45 +28,48 @@ namespace NetworkSpeedMonitor
             var app = new CommandLineApplication();
             app.Name = "NetworkSpeedMonitor";
             app.HelpOption("-?|-h|--help");
-            var snmpServerOption = app.Option("-ss|--snmpserver <ip-address>", "ip address of the snmp server", CommandOptionType.SingleValue, true);
+            var snmpServerOption = app.Option("-ss|--snmpserver <ip-address>", "ip address of the snmp server", CommandOptionType.SingleValue);
             var snmpCommunityOption = app.Option("-sc|--snmpcommunity <string>", "the snmp community (rocommunity or public)", CommandOptionType.SingleValue);
             var snmpDownOption = app.Option("-sd|--snmpdownoid <snmp-oid>", "the snmp download baseoid", CommandOptionType.SingleValue);
             var snmpUpOption = app.Option("-su|--snmpupoid <snmp-oid>", "the snmp upload baseoid", CommandOptionType.SingleValue);
 
             var mqttServerOption = app.Option("-ms|--mqttserver <ip-address>", "ip address of the mqtt server", CommandOptionType.SingleValue);
             var mqttTopicOption = app.Option("-mt|--mqtttopic <string>", "mqtt topic to push values to", CommandOptionType.SingleValue);
+
+            var intervalOption = app.Option("-i|--interval <seconds>", "how often to update the sensor (default 10)", CommandOptionType.SingleValue);
+
             app.OnExecute(() => {
                 Console.WriteLine("Starting send task");
                 new Thread(() => SendDataTask(mqttServerOption.Value(), mqttTopicOption.Value())).Start();
                 Console.WriteLine("Starting to collect data");
-                GatherData(snmpServerOption.Value(), snmpCommunityOption.Value(), snmpDownOption.Value(), snmpUpOption.Value());
+                GatherData(snmpServerOption.Value(), snmpCommunityOption.Value(), snmpDownOption.Value(), snmpUpOption.Value(), intervalOption.HasValue() ? int.Parse(intervalOption.Value()) : 10);
                 return 0;
             });
             app.Execute(args);
 
         }
 
-        public static void GatherData(string snmpServer, string snmpCommunity, string downOID, string upOID)
+        public static void GatherData(string snmpServer, string snmpCommunity, string downOID, string upOID, int interval)
         {
             var id = 0;
             /*var downID = "1.3.6.1.2.1.2.2.1.10.10";
             var upID = "1.3.6.1.2.1.2.2.1.16.10";*/
             long lastDownValue = GetValue(snmpServer, snmpCommunity, downOID);
             long lastUpValue = GetValue(snmpServer, snmpCommunity, upOID);
-            var sleepTime = 1000;
+            var sleepTime = 1000 * interval;
             while (true)
             {
                 Thread.Sleep(sleepTime);
                 var watch = Stopwatch.StartNew();
                 var newDownValue = GetValue(snmpServer, snmpCommunity, downOID);
                 var newUpValue = GetValue(snmpServer, snmpCommunity, upOID);
-                var up = (newUpValue - lastUpValue) / 1024f / 1024f;
-                var down = (newDownValue - lastDownValue) / 1024f / 1024f;
+                var up = (newUpValue - lastUpValue) / 1024f / 1024f / interval;
+                var down = (newDownValue - lastDownValue) / 1024f / 1024f / interval;
                 lastDownValue = newDownValue;
                 lastUpValue = newUpValue;
                 buffer.Post(new SampelingData() { Id = id++, Down = down, Up = up });
                 watch.Stop();
-                sleepTime = (int)Math.Max(0, 1000 - watch.ElapsedMilliseconds);
+                sleepTime = (int)Math.Max(0, (1000 * interval) - watch.ElapsedMilliseconds);
             }
         }
 
@@ -107,6 +110,7 @@ namespace NetworkSpeedMonitor
                     {
                         Console.WriteLine("Connecting to mqtt server");
                         await mqttClient.ConnectAsync(options);
+                        Console.WriteLine("Connected to mqtt server");
                     }
                     if (mqttClient.IsConnected)
                     {
