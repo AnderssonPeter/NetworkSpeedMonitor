@@ -101,10 +101,7 @@ namespace NetworkSpeedMonitor
                 {
                     i++;
                     var value = await buffer.ReceiveAsync();
-                    if (i % (60 * 60) == 0)
-                    {
-                        Console.WriteLine($"down: {value.Down} MB/s, up: {value.Up} MB/s");
-                    }
+                    Console.WriteLine($"down: {value.Down} MB/s, up: {value.Up} MB/s");
 
                     if (!mqttClient.IsConnected)
                     {
@@ -114,8 +111,8 @@ namespace NetworkSpeedMonitor
                     }
                     if (mqttClient.IsConnected)
                     {
-                        await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = mqttTopic + "/Up", Payload = Encoding.UTF8.GetBytes(value.Up.ToString()) },
-                                                      new MqttApplicationMessage() { Topic = mqttTopic + "/Down", Payload = Encoding.UTF8.GetBytes(value.Down.ToString()) });
+                        await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = mqttTopic + "/Up", Payload = Encoding.UTF8.GetBytes(value.Up.ToString("0.00")) },
+                                                      new MqttApplicationMessage() { Topic = mqttTopic + "/Down", Payload = Encoding.UTF8.GetBytes(value.Down.ToString("0.00")) });
                         //Console.WriteLine("Mqtt message sent");
                     }
                     else
