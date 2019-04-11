@@ -67,7 +67,7 @@ namespace NetworkSpeedMonitor
                 var down = (newDownValue - lastDownValue) / 1024f / 1024f / interval;
                 lastDownValue = newDownValue;
                 lastUpValue = newUpValue;
-                buffer.Post(new SampelingData() { Id = id++, Down = down, Up = up });
+                buffer.Post(new SampelingData() { Id = id++, Down = Math.Max(down, 0), Up = Math.Max(up, 0) });
                 watch.Stop();
                 sleepTime = (int)Math.Max(0, (1000 * interval) - watch.ElapsedMilliseconds);
             }
