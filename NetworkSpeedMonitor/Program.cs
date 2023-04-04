@@ -111,8 +111,8 @@ namespace NetworkSpeedMonitor
                     }
                     if (mqttClient.IsConnected)
                     {
-                        await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = mqttTopic + "/Up", Payload = Encoding.UTF8.GetBytes(value.Up.ToString("0.00")) },
-                                                      new MqttApplicationMessage() { Topic = mqttTopic + "/Down", Payload = Encoding.UTF8.GetBytes(value.Down.ToString("0.00")) });
+                        await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = mqttTopic + "/Up", Payload = Encoding.UTF8.GetBytes(value.Up.ToString("0.00")) });
+                        await mqttClient.PublishAsync(new MqttApplicationMessage() { Topic = mqttTopic + "/Down", Payload = Encoding.UTF8.GetBytes(value.Down.ToString("0.00")) });
                         //Console.WriteLine("Mqtt message sent");
                     }
                     else
